@@ -1,0 +1,53 @@
+appName: demo
+
+configMap:
+  BASE_URL: http://ita-demo.ml
+
+service:
+  portName: http
+  type: NodePort
+  port: 8080
+  targetPort: 8080
+
+ingress:
+  name: demo-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "demo-static-ip"
+  backendSvcName: demo
+  backendSvcPort: 8080
+
+replicaCount: 3
+
+container:
+  name: node
+  image:
+    repository: gcr.io/spinnaker-pe/demo
+    pullPolicy: Always
+  ports:
+    - name: liveness-port
+      containerPort: 8080
+  resources:
+    requests:
+      memory: "300Mi"
+      cpu: ".1"
+    limits:
+      memory: "300Mi"
+      cpu: ".3"
+  livenessProbe:
+    failureThreshold: 3
+    successThreshold: 1
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3
+    httpGet:
+      path: /
+      port: liveness-port
+  readinessProbe:
+    failureThreshold: 1
+    successThreshold: 1
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3
+    httpGet:
+      path: /
+      port: liveness-port
